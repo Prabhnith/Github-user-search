@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import Rx from 'rx';
-import './SearchUsers.css';
+import './GithubUserSearch.css';
 import { ClientID } from '../../config';
 
-class SearchUsers extends Component {
+class GithubUserSearch extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -24,18 +24,17 @@ class SearchUsers extends Component {
             .map((event) => {
                 return document.getElementById("search-box").value;
             });
-
+            
         SearchBox
-            .debounce(400)
+            .debounce(500)
+            .distinctUntilChanged()
             .concatMap((searchTerm) => {
                 return Rx.Observable.fromPromise(
                     fetch(`https://api.github.com/search/users?q=${searchTerm}+sort:followers?client_id=${ClientID}`)
                 ).catch(() => Rx.Observable.empty());
             })
             .subscribe((response => {
-                // console.log("REACt:", response);
                 response.json().then(result => {
-                    // console.log(result);
                     if (result.message) {
                         this.setState({ error: true, errmsg: result.message })
                     }
@@ -97,4 +96,4 @@ class SearchUsers extends Component {
         )
     }
 }
-export default SearchUsers;
+export default GithubUserSearch;

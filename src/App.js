@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import GithubUsers from './Components/GithubUsers/GithubUsers';
+import GithubUserSearch from './Components/GithubUserSearch/GithubUserSearch';
 
 class App extends Component {
   render() {
     return (
-        <GithubUsers/>      
+      <GithubUserSearch />      
     );
   }
 }
