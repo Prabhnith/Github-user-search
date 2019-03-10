@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import Rx from 'rx';
 import './SearchUsers.css';
 
 class SearchUsers extends Component {
@@ -15,24 +16,36 @@ class SearchUsers extends Component {
         this.setState({
             inputValue: e.target.value
         });
-        if (e.target.value.length) {
-            fetch('https://api.github.com/search/users?q=' + e.target.value + '+sort:followers')
-                .then(res => res.json())
-                .then(res => {
-                    if (res.items) {
-                        let tableRows = res.items.map((user, i) => {
+        let userTypesInSearchBox = Rx.Observable.fromEvent(
+            document.getElementById("search-box"), 'keyup')
+            .map((event) => {
+                return document.getElementById("search-box").value;
+            });
+
+        userTypesInSearchBox
+            .debounce(400)
+            .concatMap((searchTerm) => {
+                return Rx.Observable.fromPromise(
+                    fetch('https://api.github.com/search/users?q=' + searchTerm + '+sort:followers')
+                ).catch(() => Rx.Observable.empty());
+            })
+            .subscribe((response => {
+                console.log("REACt:", response);
+                response.json().then(result => {
+                    console.log(result);
+                    if (result.items) {
+                        let tableRows = result.items.map((user, i) => {
                             return <tr key={i}>
                                 <td>{user.login}</td>
                                 <td>{user.score}</td>
                             </tr>
                         })
                         this.setState({ result: tableRows });
-                        // console.log(this.state.result);
                     }
                 })
-                .catch(e => console.error(e));
-        }
+            }));
     }
+
     handleSubmit(event) {
         event.preventDefault();
     }
@@ -49,7 +62,6 @@ class SearchUsers extends Component {
                                     value={this.state.inputValue} onChange={this.updateInputValue} />
                             </form>
                         </div>
-
                         {
                             (this.state.result.length && this.state.inputValue.length) ?
                                 <table className="w3-table-all w3-card-4 result-table">
