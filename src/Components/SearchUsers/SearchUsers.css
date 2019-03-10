@@ -6,6 +6,16 @@
     margin-top: 10%;
 }
 
+.errorMessage{
+    border: 2px solid red;
+    color: #dc1111;
+    text-align: center;
+    margin: auto;
+    align-items: center;
+    padding: 2%;
+    margin-top: 10%;
+}
+
 .result-table{
     margin-top: 1%;
 }

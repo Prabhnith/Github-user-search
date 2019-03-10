@@ -1,13 +1,16 @@
 import React, { Component, Fragment } from 'react';
 import Rx from 'rx';
 import './SearchUsers.css';
+import { ClientID } from '../../config';
 
 class SearchUsers extends Component {
     constructor(props) {
         super(props);
         this.state = {
             inputValue: "",
-            result: []
+            result: [],
+            error: false,
+            errmsg: ""
         }
         this.updateInputValue = this.updateInputValue.bind(this);
     }
@@ -16,23 +19,26 @@ class SearchUsers extends Component {
         this.setState({
             inputValue: e.target.value
         });
-        let userTypesInSearchBox = Rx.Observable.fromEvent(
+        let SearchBox = Rx.Observable.fromEvent(
             document.getElementById("search-box"), 'keyup')
             .map((event) => {
                 return document.getElementById("search-box").value;
             });
 
-        userTypesInSearchBox
+        SearchBox
             .debounce(400)
             .concatMap((searchTerm) => {
                 return Rx.Observable.fromPromise(
-                    fetch('https://api.github.com/search/users?q=' + searchTerm + '+sort:followers')
+                    fetch(`https://api.github.com/search/users?q=${searchTerm}+sort:followers?client_id=${ClientID}`)
                 ).catch(() => Rx.Observable.empty());
             })
             .subscribe((response => {
-                console.log("REACt:", response);
+                // console.log("REACt:", response);
                 response.json().then(result => {
-                    console.log(result);
+                    // console.log(result);
+                    if (result.message) {
+                        this.setState({ error: true, errmsg: result.message })
+                    }
                     if (result.items) {
                         let tableRows = result.items.map((user, i) => {
                             return <tr key={i}>
@@ -40,7 +46,7 @@ class SearchUsers extends Component {
                                 <td>{user.score}</td>
                             </tr>
                         })
-                        this.setState({ result: tableRows });
+                        this.setState({ result: tableRows, error: false });
                     }
                 })
             }));
@@ -74,9 +80,16 @@ class SearchUsers extends Component {
                                     </tbody>
                                 </table>
                                 :
-                                <div className="card col-lg-4 col-md-4 noSearchWord">
-                                    <h4>Enter something to search!!</h4>
-                                </div>
+                                (!this.state.error) ?
+                                    <div className="card col-lg-4 col-md-4 noSearchWord">
+                                        <h4>Enter something to search!!</h4>
+                                    </div> : ""
+                        }
+                        {
+                            (this.state.error) ?
+                                <div className="card col-lg-4 col-md-4 errorMessage">
+                                    <h4> {this.state.errmsg} </h4>
+                                </div> : ""
                         }
                     </div>
                 </nav>
