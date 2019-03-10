@@ -72,7 +72,7 @@ class GithubUserSearch extends Component {
                                 <table className="w3-table-all w3-card-4 result-table">
                                     <tbody>
                                         <tr>
-                                            <th>First Name</th>
+                                            <th>User</th>
                                             <th>Points</th>
                                         </tr>
                                         {this.state.result}
